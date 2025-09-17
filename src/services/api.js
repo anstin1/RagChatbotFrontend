@@ -1,40 +1,38 @@
 // API service for backend communication
 import axios from 'axios';
 
-// Use relative URLs to avoid embedding environment variables in build output
-// This prevents secrets scanning from detecting URLs in the compiled JavaScript
-
 // Set a global timeout to prevent hanging requests
 axios.defaults.timeout = 20000;
-axios.defaults.headers.common['Accept'] = 'application/json, text/plain, */*';
-axios.defaults.headers.post['Content-Type'] = 'application/json';
+
+// Use relative URLs by default to leverage CRA proxy during local dev
+const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
 export const api = {
   // Session management
   createSession: async () => {
-    const response = await axios.post('/api/sessions');
+    const response = await axios.post(`${API_BASE_URL}/api/sessions`);
     return response.data;
   },
 
   getSessionHistory: async (sessionId) => {
-    const response = await axios.get(`/api/sessions/${sessionId}/history`);
+    const response = await axios.get(`${API_BASE_URL}/api/sessions/${sessionId}/history`);
     return response.data;
   },
 
   clearSession: async (sessionId) => {
-    const response = await axios.delete(`/api/sessions/${sessionId}`);
+    const response = await axios.delete(`${API_BASE_URL}/api/sessions/${sessionId}`);
     return response.data;
   },
 
   // Chat
   sendMessage: async (sessionId, message) => {
-    const response = await axios.post('/api/chat', { sessionId, message });
+    const response = await axios.post(`${API_BASE_URL}/api/chat`, { sessionId, message });
     return response.data;
   },
 
   // Health check
   checkHealth: async () => {
-    const response = await axios.get('/api/health');
+    const response = await axios.get(`${API_BASE_URL}/api/health`);
     return response.data;
   }
 };
