@@ -1,5 +1,5 @@
 // Custom hook for chat functionality
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../services/api';
 
 export const useChat = () => {
@@ -10,6 +10,27 @@ export const useChat = () => {
   const [typingMessage, setTypingMessage] = useState('');
   
   const initRef = useRef(false);
+
+  const loadSessionHistory = useCallback(async (sid) => {
+    try {
+      const response = await api.getSessionHistory(sid);
+      setMessages(response.history);
+    } catch (error) {
+      console.error('Failed to load session history:', error);
+    }
+  }, []);
+
+  const initializeSession = useCallback(async () => {
+    try {
+      const response = await api.createSession();
+      const newSessionId = response.sessionId;
+      setSessionId(newSessionId);
+      sessionStorage.setItem('chatSessionId', newSessionId);
+      await loadSessionHistory(newSessionId);
+    } catch (error) {
+      console.error('Failed to initialize session:', error);
+    }
+  }, [loadSessionHistory]);
 
   useEffect(() => {
     // Avoid double init under React 18 StrictMode
@@ -23,28 +44,7 @@ export const useChat = () => {
     } else {
       initializeSession();
     }
-  }, [initializeSession]);
-
-  const initializeSession = async () => {
-    try {
-      const response = await api.createSession();
-      const newSessionId = response.sessionId;
-      setSessionId(newSessionId);
-      sessionStorage.setItem('chatSessionId', newSessionId);
-      await loadSessionHistory(newSessionId);
-    } catch (error) {
-      console.error('Failed to initialize session:', error);
-    }
-  };
-
-  const loadSessionHistory = async (sid) => {
-    try {
-      const response = await api.getSessionHistory(sid);
-      setMessages(response.history);
-    } catch (error) {
-      console.error('Failed to load session history:', error);
-    }
-  };
+  }, [initializeSession, loadSessionHistory]);
 
   const sendMessage = async (message) => {
     setInputMessage('');
