@@ -16,6 +16,12 @@ export const useChat = () => {
       const response = await api.getSessionHistory(sid);
       setMessages(response.history);
     } catch (error) {
+      const status = error?.response?.status;
+      if (status === 404 || status === 500) {
+        // Treat missing or errored history as empty to avoid blocking UX
+        setMessages([]);
+        return;
+      }
       console.error('Failed to load session history:', error);
     }
   }, []);
