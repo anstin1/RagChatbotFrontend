@@ -51,8 +51,6 @@ cp .env.example .env
 
 Configure environment variables:
 
-env
-REACT_APP_API_URL=<your-backend-url>
 
 3. Start Development Server
 bash
