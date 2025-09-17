@@ -23,7 +23,7 @@ export const useChat = () => {
     } else {
       initializeSession();
     }
-  }, []);
+  }, [initializeSession]);
 
   const initializeSession = async () => {
     try {
