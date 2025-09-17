@@ -6,6 +6,8 @@ import axios from 'axios';
 
 // Set a global timeout to prevent hanging requests
 axios.defaults.timeout = 20000;
+axios.defaults.headers.common['Accept'] = 'application/json, text/plain, */*';
+axios.defaults.headers.post['Content-Type'] = 'application/json';
 
 export const api = {
   // Session management
