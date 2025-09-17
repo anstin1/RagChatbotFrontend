@@ -2,7 +2,9 @@
 import axios from 'axios';
 
 // Set a global timeout to prevent hanging requests
-axios.defaults.timeout = 20000;
+axios.defaults.timeout = 60000; // Render cold starts can take >20s
+axios.defaults.headers.common['Accept'] = 'application/json, text/plain, */*';
+axios.defaults.headers.post['Content-Type'] = 'application/json';
 
 // Use relative URLs by default to leverage CRA proxy during local dev
 const API_BASE_URL = process.env.REACT_APP_API_URL || '';
@@ -10,7 +12,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 export const api = {
   // Session management
   createSession: async () => {
-    const response = await axios.post(`${API_BASE_URL}/api/sessions`);
+    const response = await axios.post(`${API_BASE_URL}/api/sessions`, {});
     return response.data;
   },
 
