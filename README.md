@@ -1,153 +1,137 @@
 News Chatbot Frontend
-A modern, responsive React frontend for the RAG-powered news chatbot. Features chat, session management, and source citations.
+A modern, responsive React frontend for a RAG-powered chatbot with session management, citations, and smooth UX.
 
-🚀 Tech Stack
-Framework: React 18 with functional components
-Styling: SCSS with modern CSS features
-HTTP Client: Axios
-State Management: React Hooks (useState, useEffect, useRef)
-Build Tool: Create React App
-UI/UX: Responsive design with animations
+## 🚀 Tech Stack
+- React 18 (functional components)
+- React Hooks: `useState`, `useEffect`, `useRef`, `useCallback`
+- Axios (HTTP client)
+- Create React App (build tooling)
+- SCSS for styling
 
-✨ Features
-📱 Responsive Design: Mobile-first approach with adaptive layouts
-🔄 Session Management: Persistent chat history with clear functionality
-📚 Source Citations: Display relevant news sources with relevance scores
-⚡ Performance: Optimized rendering and smooth animations
-🎨 Modern UI: Gradient designs and glassmorphism effects
-
-📁 Project Structure
-frontend/
+## 📁 Folder Structure
+```
+RagChatbotFrontend/
 ├── public/
-│   ├── index.html
-│   └── favicon.ico
+│   └── index.html
 ├── src/
-│   ├── App.js              # Main application component
-│   ├── App.scss            # Main stylesheet
-│   ├── index.js            # React DOM entry point
-│   ├── index.css           # Global styles
-│   └── components/         # Additional components (future)
-├── package.json            # Dependencies and scripts
-├── .env.example           # Environment variables template
-└── README.md              # This file
+│   ├── App.js
+│   ├── App.scss
+│   ├── index.js
+│   ├── index.css
+│   ├── hooks/
+│   │   └── useChat.js
+│   ├── components/
+│   │   ├── Header.js
+│   │   ├── InputForm.js
+│   │   ├── MessageItem.js
+│   │   └── MessageList.js
+│   └── services/
+│       └── api.js
+├── package.json
+└── README.md
+```
 
-🛠️ Installation & Setup
-Prerequisites
-Node.js (v16 or higher)
-npm or yarn
-Backend server running on port 5000
+## 🔌 API Endpoints Used (Frontend → Backend)
+Base URL is configured by `REACT_APP_API_URL` at build time. Example: `https://ragchatbotbackend-osbu.onrender.com`.
 
-1. Install Dependencies
-bash
+- POST `/api/sessions`
+  - Purpose: Create a new chat session
+  - Request body: `{}`
+  - Response: `{ "sessionId": string }`
+
+- GET `/api/sessions/{sessionId}/history`
+  - Purpose: Fetch chat history for a session
+  - Response: `{ "history": Message[] }`
+
+- DELETE `/api/sessions/{sessionId}`
+  - Purpose: Clear a chat session and its messages
+  - Response: `{ "ok": true }` (shape may vary)
+
+- POST `/api/chat`
+  - Purpose: Send a message and receive assistant reply with citations
+  - Request body:
+    ```json
+    {
+      "sessionId": "string",
+      "message": "string"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "response": "string",
+      "passages": [
+        { "title": "string", "url": "string", "score": number, "snippet": "string" }
+      ]
+    }
+    ```
+
+- GET `/api/health`
+  - Purpose: Backend health check
+  - Response: `{ "status": "ok" }` (shape may vary)
+
+## 💬 Message Model (UI)
+The UI renders a normalized message list. Types and fields used by the frontend:
+
+```json
+// User message
+{
+  "id": number,
+  "type": "user",
+  "content": "string",
+  "timestamp": "ISO-8601"
+}
+
+// Bot message
+{
+  "id": number,
+  "type": "bot",
+  "content": "string",
+  "passages": [
+    { "title": "string", "url": "string", "score": number, "snippet": "string" }
+  ],
+  "timestamp": "ISO-8601",
+  "isError": boolean // only present for error messages
+}
+```
+
+## 🧠 Hook Behavior (`src/hooks/useChat.js`)
+- Initializes a session on first load, persisted in `sessionStorage` as `chatSessionId`.
+- Loads session history; if the backend returns 404/500, treats history as empty to avoid blocking the UI.
+- Shows a typing indicator while awaiting responses.
+- Supports clearing the session (server + local state) and re-initializing.
+
+## ⚙️ Environment Configuration
+This project uses Create React App. Any variables used in the client bundle must be prefixed with `REACT_APP_`.
+
+- `REACT_APP_API_URL`
+  - Description: Backend base URL used by the Axios service
+  - Example: `https://ragchatbotbackend-osbu.onrender.com`
+  - Note: Values of `REACT_APP_*` are baked into the build. Do not put secrets here.
+
+To run locally:
+```
 npm install
-# or
-yarn install
+REACT_APP_API_URL=http://localhost:5000 npm start
+```
 
-2. Environment Configuration
-Copy .env.example to .env:
+## 🧪 Development
+- Start: `npm start`
+- Lint: `npm run lint`
+- Build: `npm run build`
 
-bash
-cp .env.example .env
+## 🔒 Security Notes
+- Avoid committing `.env` files. Do not store secrets in `REACT_APP_*` variables.
+- Backend must set CORS to allow the frontend origin.
 
-Configure environment variables:
+## 📦 Deployment
+- Set `REACT_APP_API_URL` in your hosting environment to point at the backend.
+- If you prefer not to embed `REACT_APP_API_URL`, use hosting-layer rewrites to proxy `/api/*` to your backend and keep the frontend calling relative paths.
 
+## ✨ UI Highlights
+- Responsive layout with smooth animations
+- Clear separation of user vs bot messages
+- Typing indicator and error message rendering
 
-3. Start Development Server
-bash
-npm start
-# or
-yarn start
-The application will open at http://localhost:3000.
-
-🎨 UI Components & Features
-Chat Interface
-Message Types:
-
-User messages (right-aligned, gradient background)
-Bot responses (left-aligned, with source citations)
-Typing indicators (animated)
-Error messages (highlighted)
-Interactive Elements:
-
-Auto-scrolling to latest messages
-Timestamp display
-Clear chat functionality
-
-🔌 API Integration
-REST API
-
-javascript
-// Create session
-const response = await axios.post('/api/sessions');
-
-// Send message
-const response = await axios.post('/api/chat', {
-  sessionId,
-  message
-});
-
-// Get history
-const response = await axios.get(`/api/sessions/${sessionId}/history`);
-
-📱 Responsive Behavior
-Mobile Optimizations
-Touch-friendly button sizes (min 44px)
-Optimized input fields for mobile keyboards
-Swipe-friendly message scrolling
-Reduced animations for performance
-
-Desktop Enhancements
-Hover states for better interaction feedback
-Keyboard shortcuts (Enter to send)
-Advanced typography and spacing
-Enhanced visual effects
-
-🎨 Theming & Customization
-Color Scheme
-scss
-$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-$background: rgba(255, 255, 255, 0.95);
-$text-primary: #333;
-$text-secondary: #666;
-$border: #e1e5e9;
-$shadow: rgba(0, 0, 0, 0.1);
-
-Typography
-scss
-$font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto';
-$font-sizes: (
-  'small': 0.8rem,
-  'normal': 1rem,
-  'large': 1.2rem,
-  'heading': 1.8rem
-);
-
-⚡ Performance Optimizations
-React Optimizations
-Functional Components: Better performance than class components
-useRef: Prevent unnecessary re-renders
-Conditional Rendering: Efficient DOM updates
-
-CSS Optimizations
-SCSS Mixins: Reusable styles for consistency
-Variables: Centralized theme values
-Minification: Production builds automatically minify CSS
-
-🔒 Security Considerations
-Environment variables for API URLs
-CORS configured server-side
-
-🧪 Testing
-bash
-# Run tests
-npm test
-
-# Lint code
-npm run lint
-
-📈 Deployment
-Build the app and serve with Nginx (see Dockerfile in project)
-
-🤝 Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
+## 🤝 Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss your proposed changes.
